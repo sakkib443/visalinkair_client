@@ -1,0 +1,17 @@
+# Dependencies & build output (reinstalled/rebuilt inside the image)
+node_modules
+.next
+
+# Secrets — never bake into the image (provided via Coolify build/runtime vars)
+.env
+.env.*
+
+# Large, git-ignored, unreferenced source video — keep it out of the build context
+public/2169879-uhd_3840_2160_30fps.mp4
+
+# VCS / editor / logs / docs
+.git
+.gitignore
+.vscode
+*.log
+README.md

@@ -1,0 +1,1280 @@
+@import "tailwindcss";
+
+/* Force light theme site-wide — `dark:` classes only fire when a manual
+   `.dark` class is added to an ancestor, never from OS `prefers-color-scheme`.
+   The admin dashboard was designed for a light surface. */
+@custom-variant dark (&:where(.dark, .dark *));
+:root { color-scheme: light; }
+
+/* =====================================================
+   VISALINK AIR — BRAND TOKENS · SINGLE SOURCE OF TRUTH
+   =====================================================
+   সাইটের সব রঙ এখান থেকেই আসে। এই ব্লকের একটা মান বদলালেই
+   অ্যাডমিন ড্যাশবোর্ড আর ক্লায়েন্ট সাইড — দুই জায়গার বাটন,
+   ব্যাজ, হেডার, ফোকাস রিং সব একসাথে বদলে যায়।
+
+   ব্যবহারের নিয়ম:
+     brand-dark    → প্রাইমারি বাটন, ডার্ক হেডার/সারফেস
+     brand-blue    → সেকেন্ডারি বাটন, লিংক, অ্যাকটিভ স্টেট
+     brand-accent  → শুধু ছোট হাইলাইট (আইকন, লেবেল, ব্যাজ,
+                     প্রোগ্রেস বার)। বড় বাটনে অরেঞ্জ নয়।
+     whatsapp      → শুধু WhatsApp বাটন
+     on-brand      → ডার্ক/ব্লু সারফেসের উপরের টেক্সট (সাদা)
+
+   Tailwind v4 এই ভেরিয়েবলগুলো থেকে ইউটিলিটি ক্লাস বানায়
+   (bg-brand-dark, text-brand-accent …) আর একই সাথে সেগুলো
+   :root এ CSS variable হিসেবেও দেয়, তাই inline style-এও
+   var(--color-brand-dark) লেখা যায়। JS থেকে ব্যবহারের জন্য
+   src/theme.js দেখুন।
+   ===================================================== */
+@theme {
+    /* Dark blue — প্রাইমারি বাটন ও ডার্ক সারফেস */
+    --color-brand-dark: #1a1a4e;
+    --color-brand-dark-hover: #111138;
+
+    /* Action blue — সেকেন্ডারি বাটন, লিংক, অ্যাকটিভ স্টেট */
+    --color-brand-blue: #1D7EDD;
+    --color-brand-blue-hover: #1565c0;
+    --color-brand-blue-soft: #E8F2FC;
+
+    /* Orange — শুধু ছোট হাইলাইট */
+    --color-brand-accent: #EF8C2C;
+    --color-brand-accent-hover: #d97b1f;
+    --color-brand-accent-soft: #FEF4E9;
+    --color-brand-accent-ink: #b45309;
+
+    /* WhatsApp — ব্র্যান্ড কালার, বদলানো যাবে না */
+    --color-whatsapp: #25D366;
+    --color-whatsapp-hover: #1FB955;
+
+    /* ডার্ক/ব্লু সারফেসের উপরের টেক্সট */
+    --color-on-brand: #ffffff;
+
+    /* পেজের নিরপেক্ষ ব্যাকগ্রাউন্ড */
+    --color-surface: #F5F6FA;
+    --color-surface-muted: #F8FAFC;
+}
+
+/* Tailwind v4 dropped the default `cursor: pointer` on buttons — restore it
+   site-wide so every interactive element shows the hand cursor on hover. */
+button:not(:disabled),
+a[href],
+[role="button"],
+[role="tab"],
+[role="option"],
+summary,
+label:has(input[type="checkbox"]),
+label:has(input[type="radio"]),
+select {
+    cursor: pointer;
+}
+button:disabled { cursor: not-allowed; }
+
+/* Toast: right-side slide-in / slide-out + progress bar shrink */
+@keyframes toastSlideInRight {
+    from { transform: translateX(120%); opacity: 0; }
+    to   { transform: translateX(0);    opacity: 1; }
+}
+@keyframes toastSlideOutRight {
+    from { transform: translateX(0);    opacity: 1; }
+    to   { transform: translateX(120%); opacity: 0; }
+}
+@keyframes progressShrink {
+    from { width: 100%; }
+    to   { width: 0%; }
+}
+.animate-slide-in-right  { animation: toastSlideInRight  350ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-slide-out-right { animation: toastSlideOutRight 300ms cubic-bezier(0.4, 0, 1, 1) both; }
+.animate-progress-shrink { animation: progressShrink linear both; }
+
+/* Force hand cursor on every clickable element AND every descendant.
+   Uses explicit `pointer` (not `inherit`) so text nodes inside buttons /
+   links can't fall back to the I-beam cursor. */
+a[href], a[href] *,
+button:not(:disabled), button:not(:disabled) *,
+[role="button"], [role="button"] *,
+[role="tab"], [role="tab"] *,
+[role="option"], [role="option"] *,
+summary, summary *,
+label.cursor-pointer, label.cursor-pointer *,
+.cursor-pointer, .cursor-pointer * {
+    cursor: pointer;
+}
+/* Text inputs / textareas inside clickable wrappers keep the text cursor,
+   because they are the primary interaction target. */
+input[type="text"], input[type="email"], input[type="tel"], input[type="url"],
+input[type="password"], input[type="number"], input[type="search"], textarea {
+    cursor: text;
+}
+
+/* =====================================================
+   VISALINK AIR - DYNAMIC DESIGN SYSTEM
+   Colors: Orange (#EF8C2C) + Blue (#3590CF)
+   Fonts: Teko (Heading) + Poppins (Body)
+   ===================================================== */
+
+/* =====================================================
+   CSS VARIABLES - Visalink Air Brand Theme
+   ===================================================== */
+:root {
+  /* Primary Colors (Visalink Air Orange) */
+  --color-primary: #EF8C2C;
+  --color-primary-dark: #D97A1E;
+  --color-primary-light: #F5A54D;
+  --color-primary-10: rgba(239, 140, 44, 0.1);
+  --color-primary-20: rgba(239, 140, 44, 0.2);
+  --color-primary-30: rgba(239, 140, 44, 0.3);
+
+  /* Secondary Colors (Visalink Air Blue) */
+  --color-secondary: #3590CF;
+  --color-secondary-dark: #2A74A8;
+  --color-secondary-light: #5AA8DE;
+  --color-secondary-10: rgba(53, 144, 207, 0.1);
+  --color-secondary-20: rgba(53, 144, 207, 0.2);
+  --color-secondary-30: rgba(53, 144, 207, 0.3);
+
+  /* Accent Color (Use primary as accent) */
+  --color-accent: #EF8C2C;
+  --color-accent-10: rgba(239, 140, 44, 0.1);
+
+  /* Neutral Colors */
+  --color-gray-950: #0a0f1a;
+  --color-gray-900: #111827;
+  --color-gray-800: #1f2937;
+  --color-gray-700: #374151;
+  --color-gray-600: #4b5563;
+  --color-gray-500: #6b7280;
+  --color-gray-400: #9ca3af;
+  --color-gray-300: #d1d5db;
+  --color-gray-200: #e5e7eb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-50: #f9fafb;
+  --color-black: #000000;
+  --color-white: #ffffff;
+
+  /* Dynamic Fonts - Loaded via Google Fonts CDN in layout.js */
+  --font-heading: "Teko", sans-serif;
+  --font-body: "Poppins", sans-serif;
+  --font-hind-siliguri: "Hind Siliguri", sans-serif;
+
+  /* Spacing */
+  --container-max: 1280px;
+  --section-padding: 5rem;
+
+  /* Border Radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-full: 9999px;
+
+  /* Dashboard Design Standards */
+  --dashboard-radius: 0.5rem;
+  --dashboard-border: #e5e7eb;
+  --dashboard-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-primary: 0 10px 30px -5px rgba(239, 140, 44, 0.3);
+  --shadow-secondary: 0 10px 30px -5px rgba(53, 144, 207, 0.3);
+}
+
+/* =====================================================
+   BASE TYPOGRAPHY
+   ===================================================== */
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-gray-800);
+  background: var(--color-white);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+  cursor: default;
+}
+
+/* Universal font inheritance */
+*,
+*::before,
+*::after {
+  font-family: inherit;
+}
+
+/* Precise Cursor Management */
+p,
+span,
+li,
+blockquote {
+  cursor: text;
+}
+
+a,
+button,
+[role="button"],
+select,
+input[type="submit"],
+input[type="button"],
+.clickable {
+  cursor: pointer !important;
+}
+
+input,
+textarea,
+[contenteditable="true"] {
+  cursor: text;
+}
+
+/* Prevent Caret on non-editable elements */
+*:not(input):not(textarea):not([contenteditable="true"]) {
+  caret-color: transparent;
+}
+
+input,
+textarea,
+[contenteditable="true"] {
+  caret-color: var(--color-focus, #B45309);
+}
+
+/* Headings use Teko (Primary Font).
+   MUST stay inside @layer base. Unlayered rules beat *every* layered rule
+   regardless of specificity, so an unlayered `:where(h1…)` silently
+   overrode Tailwind's `text-white` / `font-*` utilities (which live in
+   @layer utilities) — a heading marked text-white rendered near-black on
+   dark banners. Inside @layer base the utilities win again, which is the
+   behaviour every component here was already written against. */
+@layer base {
+  :where(h1, h2, h3, h4, h5, h6) {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    color: var(--color-gray-900);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    text-transform: none;
+    cursor: text;
+  }
+}
+
+/* Heading sizes removed — controlled by Tailwind utility classes per component */
+
+/* Body text uses Poppins. Layered for the same reason as headings above —
+   an unlayered `p` rule would outrank every `leading-*` utility. */
+@layer base {
+  p {
+    font-family: var(--font-body);
+    line-height: 1.7;
+  }
+}
+
+/* =====================================================
+   LANGUAGE-SPECIFIC FONTS
+   Bangla = Hind Siliguri (automatic)
+   English = Teko/Poppins
+   ===================================================== */
+
+html[lang="bn"] body,
+html[lang="bn"] h1,
+html[lang="bn"] h2,
+html[lang="bn"] h3,
+html[lang="bn"] h4,
+html[lang="bn"] h5,
+html[lang="bn"] h6,
+html[lang="bn"] p,
+html[lang="bn"] span,
+html[lang="bn"] a,
+html[lang="bn"] button,
+html[lang="bn"] input,
+html[lang="bn"] textarea,
+html[lang="bn"] label,
+html[lang="bn"] .font-heading {
+  font-family: var(--font-hind-siliguri), 'Hind Siliguri', sans-serif !important;
+}
+
+html[lang="bn"] body {
+  line-height: 1.8;
+}
+
+html[lang="bn"] h1,
+html[lang="bn"] h2,
+html[lang="bn"] h3,
+html[lang="bn"] h4,
+html[lang="bn"] h5,
+html[lang="bn"] h6 {
+  line-height: 1.4;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* Font utility classes */
+.font-heading {
+  font-family: var(--font-heading), sans-serif !important;
+}
+
+.font-body {
+  font-family: var(--font-body), sans-serif !important;
+}
+
+.font-sans {
+  font-family: var(--font-body), sans-serif !important;
+}
+
+.font-bangla {
+  font-family: var(--font-hind-siliguri), 'Hind Siliguri', sans-serif !important;
+}
+
+/* =====================================================
+   DYNAMIC COLOR UTILITIES
+   ===================================================== */
+
+.text-primary {
+  color: var(--color-primary);
+}
+
+.text-primary-dark {
+  color: var(--color-primary-dark);
+}
+
+.text-secondary {
+  color: var(--color-secondary);
+}
+
+.text-secondary-dark {
+  color: var(--color-secondary-dark);
+}
+
+.text-accent {
+  color: var(--color-accent);
+}
+
+.bg-primary {
+  background-color: var(--color-primary);
+}
+
+.bg-primary-10 {
+  background-color: var(--color-primary-10);
+}
+
+.bg-primary-20 {
+  background-color: var(--color-primary-20);
+}
+
+.bg-secondary {
+  background-color: var(--color-secondary);
+}
+
+.bg-secondary-10 {
+  background-color: var(--color-secondary-10);
+}
+
+.bg-secondary-20 {
+  background-color: var(--color-secondary-20);
+}
+
+.bg-accent {
+  background-color: var(--color-accent);
+}
+
+.bg-accent-10 {
+  background-color: var(--color-accent-10);
+}
+
+.border-primary {
+  border-color: var(--color-primary);
+}
+
+.border-secondary {
+  border-color: var(--color-secondary);
+}
+
+.ring-primary {
+  --tw-ring-color: var(--color-primary);
+}
+
+.ring-secondary {
+  --tw-ring-color: var(--color-secondary);
+}
+
+/* Hover States */
+.hover\:bg-primary:hover {
+  background-color: var(--color-primary);
+}
+
+.hover\:bg-primary-dark:hover {
+  background-color: var(--color-primary-dark);
+}
+
+.hover\:bg-secondary:hover {
+  background-color: var(--color-secondary);
+}
+
+.hover\:bg-secondary-dark:hover {
+  background-color: var(--color-secondary-dark);
+}
+
+.hover\:text-primary:hover {
+  color: var(--color-primary);
+}
+
+.hover\:text-secondary:hover {
+  color: var(--color-secondary);
+}
+
+/* =====================================================
+   GRADIENTS
+   ===================================================== */
+
+.gradient-primary {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+}
+
+.gradient-secondary {
+  background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-secondary-dark) 100%);
+}
+
+.gradient-mixed {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+}
+
+.gradient-hero {
+  background: linear-gradient(135deg,
+      var(--color-secondary-dark) 0%,
+      var(--color-secondary) 40%,
+      var(--color-primary) 100%);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-reverse {
+  background: linear-gradient(135deg, var(--color-secondary), var(--color-primary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* =====================================================
+   BUTTONS
+   ===================================================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-radius: var(--radius-md);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primary-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-primary);
+}
+
+.btn-secondary {
+  background-color: var(--color-secondary);
+  color: var(--color-white);
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-secondary-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-secondary);
+}
+
+.btn-pill {
+  border-radius: 9999px;
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+.btn-dark {
+  background-color: var(--color-gray-900);
+  color: var(--color-white);
+}
+
+.btn-dark:hover {
+  background-color: var(--color-black);
+  transform: translateY(-2px);
+}
+
+.btn-outline-primary {
+  background: transparent;
+  border: 2px solid var(--color-primary);
+  color: var(--color-primary);
+}
+
+.btn-outline-primary:hover {
+  background: var(--color-primary);
+  color: var(--color-white);
+  box-shadow: var(--shadow-primary);
+}
+
+.btn-outline-secondary {
+  background: transparent;
+  border: 2px solid var(--color-secondary);
+  color: var(--color-secondary);
+}
+
+.btn-outline-secondary:hover {
+  background: var(--color-secondary);
+  color: var(--color-white);
+  box-shadow: var(--shadow-secondary);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--color-gray-700);
+}
+
+.btn-ghost:hover {
+  background: var(--color-gray-100);
+}
+
+/* Size Variants */
+.btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.8125rem;
+}
+
+.btn-lg {
+  padding: 1rem 2rem;
+  font-size: 1rem;
+}
+
+.btn-xl {
+  padding: 1.25rem 2.5rem;
+  font-size: 1.125rem;
+}
+
+/* =====================================================
+   CARDS
+   ===================================================== */
+
+.card {
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-gray-100);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
+}
+
+.card-glass {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.card-flat {
+  background: var(--color-white);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--dashboard-border);
+  box-shadow: none;
+  transition: all 0.2s ease;
+}
+
+.card-flat:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+/* =====================================================
+   INPUTS
+   ===================================================== */
+
+.input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 3px var(--color-secondary-10);
+}
+
+.input::placeholder {
+  color: var(--color-gray-400);
+}
+
+/* Remove the browser autofill blue/yellow wash (keeps autofill working) */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: var(--color-gray-800);
+  box-shadow: 0 0 0 1000px var(--color-white) inset;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+/* =====================================================
+   VISA GUIDE RICH CONTENT  (.visa-content)
+   Renders the HTML authored in the admin Quill editor.
+   The SAME class is used by the admin live preview and by the public
+   details page, which is what guarantees "what you see in the editor is
+   what the visitor gets". Quill 2 emits <ol><li data-list="bullet|ordered">
+   rather than <ul>/<ol>, so BOTH shapes are styled below — otherwise
+   seeded/pasted markup and editor output would render differently.
+   ===================================================== */
+
+.visa-content {
+    font-family: var(--font-body);
+    color: #4b5563;
+    font-size: 15.5px;
+    line-height: 1.9;
+    word-break: break-word;
+}
+
+.visa-content > *:first-child { margin-top: 0; }
+.visa-content > *:last-child  { margin-bottom: 0; }
+
+.visa-content h1,
+.visa-content h2 {
+    font-family: var(--font-body);
+    font-size: 23px;
+    font-weight: 700;
+    color: #1f1a17;      /* warm charcoal — replaces the old navy #14146e */
+    margin: 2.75rem 0 1.1rem;
+    letter-spacing: -0.01em;
+    line-height: 1.35;
+}
+.visa-content h3 {
+    font-family: var(--font-body);
+    font-size: 16.5px;
+    font-weight: 700;
+    color: #6b7280;
+    margin: 2.1rem 0 0.85rem;
+    line-height: 1.5;
+}
+.visa-content h4,
+.visa-content h5,
+.visa-content h6 {
+    font-family: var(--font-body);
+    font-size: 14.5px;
+    font-weight: 700;
+    color: #374151;
+    margin: 1.6rem 0 0.7rem;
+}
+
+/* line-height restated explicitly: the base `p` rule targets the element
+   directly, which beats the 1.9 inherited from `.visa-content`. */
+.visa-content p  { margin: 0 0 1.15rem; line-height: 1.9; }
+.visa-content li { line-height: 1.85; }
+.visa-content strong, .visa-content b { font-weight: 700; color: #1f2937; }
+.visa-content em, .visa-content i    { font-style: italic; }
+.visa-content u                       { text-decoration: underline; }
+.visa-content s, .visa-content strike { text-decoration: line-through; }
+
+.visa-content a {
+    /* Amber-700 in place of the old bright blue — keeps links visible
+       and clickable-looking on white without any blue in the palette. */
+    color: #B45309;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+.visa-content a:hover { color: #7c2d12; }
+
+/* ---- Lists: plain <ul>/<ol> ---- */
+.visa-content ul,
+.visa-content ol {
+    margin: 0 0 1.35rem;
+    padding-left: 1.75rem;
+}
+.visa-content ul { list-style: disc; }
+.visa-content ol { list-style: decimal; }
+.visa-content li {
+    margin: 0.55rem 0;
+    padding-left: 0.35rem;
+    cursor: text;
+}
+.visa-content li::marker { color: #9ca3af; font-weight: 600; }
+.visa-content ul ul { list-style: circle; margin: 0.25rem 0; }
+.visa-content ol ol { list-style: lower-alpha; margin: 0.25rem 0; }
+
+/* ---- Lists: Quill 2 format <ol><li data-list="…"> ----
+   Quill renders every list as <ol> and distinguishes the marker with a
+   data attribute, so the plain rules above would number bullets. Reset
+   the <ol> and drive the marker from a counter instead. */
+.visa-content ol:has(> li[data-list]) { list-style: none; padding-left: 0; counter-reset: vc-list; }
+.visa-content li[data-list] {
+    position: relative;
+    padding-left: 1.9rem;
+    list-style: none;
+}
+.visa-content li[data-list] > .ql-ui { display: none; }
+
+.visa-content li[data-list="bullet"]::before {
+    content: "•";
+    position: absolute;
+    left: 0.55rem;
+    color: #9ca3af;
+    font-weight: 700;
+}
+.visa-content li[data-list="ordered"] {
+    counter-increment: vc-list;
+}
+.visa-content li[data-list="ordered"]::before {
+    content: counter(vc-list) ".";
+    position: absolute;
+    left: 0;
+    width: 1.5rem;
+    text-align: right;
+    color: #9ca3af;
+    font-weight: 600;
+}
+/* A bullet in the middle of an ordered run must not consume a number. */
+.visa-content li[data-list="bullet"] { counter-increment: none; }
+
+/* ---- Quill alignment classes ---- */
+.visa-content .ql-align-center  { text-align: center; }
+.visa-content .ql-align-right   { text-align: right; }
+.visa-content .ql-align-justify { text-align: justify; }
+
+/* ---- Quill indent classes (1–8, both list and block) ---- */
+.visa-content .ql-indent-1  { padding-left: 3rem; }
+.visa-content .ql-indent-2  { padding-left: 6rem; }
+.visa-content .ql-indent-3  { padding-left: 9rem; }
+.visa-content .ql-indent-4  { padding-left: 12rem; }
+.visa-content .ql-indent-5  { padding-left: 15rem; }
+.visa-content .ql-indent-6  { padding-left: 18rem; }
+.visa-content .ql-indent-7  { padding-left: 21rem; }
+.visa-content .ql-indent-8  { padding-left: 24rem; }
+/* Indented list items keep room for their marker on top of the indent. */
+.visa-content li[data-list].ql-indent-1 { padding-left: 4.9rem; }
+.visa-content li[data-list].ql-indent-2 { padding-left: 7.9rem; }
+.visa-content li[data-list].ql-indent-3 { padding-left: 10.9rem; }
+.visa-content li[data-list].ql-indent-1::before { left: 3rem; }
+.visa-content li[data-list].ql-indent-2::before { left: 6rem; }
+.visa-content li[data-list].ql-indent-3::before { left: 9rem; }
+
+/* ---- Quill font sizes ---- */
+.visa-content .ql-size-small { font-size: 0.78em; }
+.visa-content .ql-size-large { font-size: 1.35em; }
+.visa-content .ql-size-huge  { font-size: 1.85em; }
+
+/* ---- Blocks ---- */
+.visa-content blockquote {
+    margin: 1rem 0;
+    padding: 0.6rem 1rem;
+    border-left: 4px solid var(--color-primary);
+    background: #fff8f1;
+    color: #4b5563;
+    border-radius: 0 0.375rem 0.375rem 0;
+}
+.visa-content pre,
+.visa-content .ql-code-block-container {
+    margin: 1rem 0;
+    padding: 0.85rem 1rem;
+    background: #0f172a;
+    color: #e2e8f0;
+    border-radius: 0.5rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+}
+.visa-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.5rem;
+    margin: 0.75rem 0;
+}
+.visa-content hr {
+    border: 0;
+    border-top: 1px solid var(--color-gray-200);
+    margin: 1.5rem 0;
+}
+
+/* Tables can outgrow the column on mobile — let them scroll rather than
+   forcing the whole page to scroll sideways. */
+.visa-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 13.5px;
+    display: block;
+    overflow-x: auto;
+}
+.visa-content th,
+.visa-content td {
+    border: 1px solid var(--color-gray-200);
+    padding: 0.5rem 0.7rem;
+    text-align: left;
+}
+.visa-content th { background: var(--color-gray-50); font-weight: 700; color: #1f2937; }
+
+/* Tighter rhythm inside the narrow mobile-preview frame */
+.visa-content--compact { font-size: 14px; }
+.visa-content--compact h1,
+.visa-content--compact h2 { font-size: 18px; margin-top: 1.4rem; }
+.visa-content--compact h3 { font-size: 14.5px; }
+
+/* =====================================================
+   DARK MODE (optional)
+   ===================================================== */
+
+.dark {
+  color-scheme: dark;
+}
+
+.dark body {
+  background: var(--color-gray-900);
+  color: var(--color-gray-200);
+}
+
+.dark h1,
+.dark h2,
+.dark h3,
+.dark h4,
+.dark h5,
+.dark h6 {
+  color: var(--color-white);
+}
+
+.dark .card {
+  background: var(--color-gray-800);
+  border-color: var(--color-gray-700);
+}
+
+.dark .input {
+  background: var(--color-gray-800);
+  border-color: var(--color-gray-600);
+  color: var(--color-gray-100);
+}
+
+.dark .input:focus {
+  border-color: var(--color-secondary);
+}
+
+/* =====================================================
+   ANIMATIONS
+   ===================================================== */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideLeft {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideRight {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 20px var(--color-primary-20);
+  }
+
+  50% {
+    box-shadow: 0 0 40px var(--color-primary-30);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.6s ease-out;
+}
+
+.animate-slide-down {
+  animation: slideDown 0.6s ease-out;
+}
+
+.animate-slide-left {
+  animation: slideLeft 0.6s ease-out;
+}
+
+.animate-slide-right {
+  animation: slideRight 0.6s ease-out;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.4s ease-out;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 20s linear infinite;
+}
+
+/* =====================================================
+   UTILITIES
+   ===================================================== */
+
+.container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (min-width: 640px) {
+  .container {
+    padding: 0 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding: 0 2rem;
+  }
+}
+
+.section {
+  padding: var(--section-padding) 0;
+}
+
+/* Section with blue background pattern */
+.section-blue {
+  background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-secondary-dark) 100%);
+  color: var(--color-white);
+}
+
+/* Section with orange accent */
+.section-orange {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: var(--color-white);
+}
+
+/* Selection */
+::selection {
+  background-color: var(--color-primary-20);
+  color: var(--color-primary-dark);
+}
+
+/* Focus Ring — brand focus color for keyboard navigation */
+*:focus-visible {
+  outline: 2px solid var(--color-focus, #B45309);
+  outline-offset: 2px;
+}
+
+/* =====================================================
+   INPUT FOCUS — SITE-WIDE DARK BLUE
+   Every text input / textarea / select shows the same dark-blue
+   border + ring when focused, regardless of what brand color the
+   surrounding tab uses. Wrapper boxes that opted into a
+   `focus-within:border-*` or `focus-within:ring-*` utility get the
+   same treatment. Added here (not per-component) so future forms
+   inherit it automatically — do NOT set per-field focus colors again.
+   ===================================================== */
+:root {
+    /* Amber-700 — the brand's blue-free focus indicator. Was #1D4ED8,
+       swapped site-wide as part of the visa-details page redesign so
+       inputs on that page (and everywhere else) stop lighting up blue
+       when a visitor tabs into them. */
+    --color-focus: #B45309;
+    --color-focus-ring: rgba(180, 83, 9, 0.22);
+}
+
+input:focus,
+input:focus-visible,
+textarea:focus,
+textarea:focus-visible,
+select:focus,
+select:focus-visible,
+[contenteditable="true"]:focus,
+[contenteditable="true"]:focus-visible {
+    outline: none !important;
+    border-color: var(--color-focus) !important;
+    box-shadow: 0 0 0 3px var(--color-focus-ring) !important;
+}
+
+/* Wrapper boxes that visually own the border and delegate focus to
+   their child input (autocomplete pickers, field-label boxes). Any
+   element that used a Tailwind `focus-within:border-*` or
+   `focus-within:ring-*` utility flips to the same dark blue. */
+[class*="focus-within:border"]:focus-within {
+    border-color: var(--color-focus) !important;
+}
+[class*="focus-within:ring"]:focus-within {
+    box-shadow: 0 0 0 3px var(--color-focus-ring) !important;
+    --tw-ring-color: var(--color-focus-ring) !important;
+    --tw-ring-shadow: 0 0 0 3px var(--color-focus-ring) !important;
+}
+
+/* When a wrapper handles focus for its child input (either via a
+   `focus-within:border-*` or `focus-within:ring-*` utility), the
+   child input is completely bare — no border, no outline, no ring,
+   focused or not. The wrapper owns all visual focus feedback so
+   there's no box-in-a-box effect. */
+[class*="focus-within:border"] :is(input, textarea, select),
+[class*="focus-within:ring"] :is(input, textarea, select),
+[class*="focus-within:border"] :is(input, textarea, select):focus,
+[class*="focus-within:ring"] :is(input, textarea, select):focus {
+    border: 0 !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Selection color also flips to the focus blue so text-selection
+   inside inputs matches. */
+input::selection,
+textarea::selection {
+    background-color: var(--color-focus-ring);
+    color: var(--color-focus);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-gray-100);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-gray-300);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-secondary);
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: var(--color-gray-800);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: var(--color-gray-600);
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Prevent layout shift.
+   Kept inside @layer base so Tailwind height utilities (h-12, h-24, …)
+   can still override it — otherwise this unlayered rule wins over every
+   layered utility and forces every <img> to its natural height. */
+@layer base {
+  img,
+  video {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* =====================================================
+   SKELETON LOADING
+   ===================================================== */
+
+.skeleton {
+  background: linear-gradient(90deg,
+      var(--color-gray-200) 25%,
+      var(--color-gray-100) 50%,
+      var(--color-gray-200) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.dark .skeleton {
+  background: linear-gradient(90deg,
+      var(--color-gray-700) 25%,
+      var(--color-gray-600) 50%,
+      var(--color-gray-700) 75%);
+  background-size: 200% 100%;
+}
+
+/* =====================================================
+   VISALINK AIR SPECIFIC UTILITIES
+   ===================================================== */
+
+/* Visa Card Accent Bar */
+.accent-bar-primary {
+  position: relative;
+}
+
+.accent-bar-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: 4px 0 0 4px;
+}
+
+.accent-bar-secondary {
+  position: relative;
+}
+
+.accent-bar-secondary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--color-secondary);
+  border-radius: 4px 0 0 4px;
+}
+
+/* Decorative circle backgrounds */
+.bg-circle-primary {
+  background: radial-gradient(circle at center, var(--color-primary-10) 0%, transparent 70%);
+}
+
+.bg-circle-secondary {
+  background: radial-gradient(circle at center, var(--color-secondary-10) 0%, transparent 70%);
+}
+
+/* Custom Skeleton & Animations */
+.skeleton-shimmer {
+  background: linear-gradient(90deg, 
+    var(--color-gray-100) 25%, 
+    var(--color-gray-50) 50%, 
+    var(--color-gray-100) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* visa-content spacing pass */
