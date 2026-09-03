@@ -44,3 +44,6 @@ dev_server.log
 
 # large media — exceeds GitHub's 100MB file limit; host on a CDN (e.g. Cloudinary) instead
 /public/2169879-uhd_3840_2160_30fps.mp4
+branch_structure.json
+temp_auto_push.bat
+temp_interactive_push.bat
